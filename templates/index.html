@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Word of the day</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/skeleton.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/layout.css') }}">
@@ -38,7 +39,7 @@
             <h2>Origin</h2>
             <p>{{ origin }}</p>
 
-            <a href="http://dictionary.reference.com/wordoftheday">Dictionary.com word of the day</a>
+            <p>source: <a href="http://dictionary.reference.com/wordoftheday">Dictionary.com word of the day</a></p>
         </div>
     </div>
 </body>
