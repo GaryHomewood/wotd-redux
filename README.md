@@ -6,9 +6,9 @@ Note: If you're using Chrome M31 Beta on Android, when you select "Add to homesc
 
 ## TODO
 
-1. reduce and compress CSS
+1. reduce and compress CSS (using grunt?)
 2. add a favicon
 3. adjust layout for desktop vs. mobile
 4. document things learned on the project page
 5. optimise based on YSlow
-
+6. add a path to return data as json
