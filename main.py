@@ -1,6 +1,7 @@
 from lxml import html
 from lxml.cssselect import CSSSelector
 import requests
+import datetime
 from flask import Flask
 from flask import render_template
 from flask import jsonify
@@ -48,6 +49,8 @@ for quote in quotes:
 	quoteList.append(q)
 	i = i + 1
 
+wordDate = datetime.date.today().isoformat()
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -61,6 +64,7 @@ def main():
 @app.route("/data")
 def data():
 		return jsonify(	word = word,
+										wordDate = wordDate,
 										pronounciation = pronounciation,
 										definitions = definitionDictionary,
 										quotes = quoteList,
