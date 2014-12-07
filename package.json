@@ -1,8 +1,0 @@
-{
-  "name": "wotd-redux",
-  "version": "0.1.0",
-  "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-cssmin": "~0.7.0"
-  }
-}
