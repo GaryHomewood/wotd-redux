@@ -5,42 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
     <title>Word of the day</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/skeleton.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
     <link href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css'>
 </head>
 <body>
     <div class="container">
-        <div class="ten columns offset-by-three">
-
-            <h1>{{ word }}</h1>
-            <p class="pronounciation">{{ pronounciation }}</p>
-    
-            {% for key, value in definitions.iteritems() %}
-            <p class="wordtype">{{ key }}</p>
-            <ol>
-                {% for v in value %}
-        	   <li>{{ v }}</li>
-                {% endfor %}
-            </ol>
+        <h1>{{ word }}</h1>
+        <p class="pronounciation">{{ pronounciation }}</p>
+        {% for key, value in definitions.iteritems() %}
+        <p class="wordtype">{{ key }}</p>
+        <ol>
+            {% for v in value %}
+            <li>{{ v }}</li>
             {% endfor %}
-
-            <hr/>
-
-            <h2>Quotes</h2>
-            {% for quote in quotes %}
-        	<blockquote>
-        		<p>{{ quote.text_content() }}</p>
-        		<small>&mdash;{{ sources[loop.index - 1].text_content().replace("--", "") }}</small>
-        	</blockquote>
-            {% endfor %}
-
-            <h2>Origin</h2>
-            <p>{{ origin }}</p>
-
-            <p>source: <a href="http://dictionary.reference.com/wordoftheday">Dictionary.com word of the day</a></p>
-        </div>
+        </ol>
+        {% endfor %}
+        <hr/>
+        <h2>Quotes</h2>
+        {% for quote in quotes %}
+        <blockquote>
+            <p>{{ quote.quote }}</p>
+            <small>&mdash;{{ quote.source }}</small>
+        </blockquote>
+        {% endfor %}
+        <h2>Origin</h2>
+        <p>{{ origin }}</p>
+        <p>source: <a href="http://dictionary.reference.com/wordoftheday">Dictionary.com word of the day</a></p>
     </div>
 </body>
 </html>

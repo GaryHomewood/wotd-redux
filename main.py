@@ -3,6 +3,7 @@ from lxml.cssselect import CSSSelector
 import requests
 from flask import Flask
 from flask import render_template
+from flask import jsonify
 
 page = requests.get('http://dictionary.reference.com/wordoftheday')
 tree = html.fromstring(page.text)
@@ -36,11 +37,34 @@ for definitionLine in definitions[0]:
 # add remaining list of definitions to dictionary
 definitionDictionary[wordType] = definitionList
 
+# populate a dictionary of quotes
+quoteList = []
+i = 0
+for quote in quotes:
+	q = {
+		'quote': quote.text_content(),
+		'source': sources[i].text_content().replace("--", "")
+			}
+	quoteList.append(q)
+	i = i + 1
+
 app = Flask(__name__)
 
 @app.route("/")
 def main():
-    return render_template("index.html", word = word, pronounciation = pronounciation, definitions = definitionDictionary, quotes = quotes, sources = sources, origin = origin)
+    return render_template("index.html", word = word,
+										pronounciation = pronounciation,
+										definitions = definitionDictionary,
+										quotes = quoteList,
+										origin = origin)
 
-# if __name__ == "__main__":
-#     app.run()
+@app.route("/data")
+def data():
+		return jsonify(	word = word,
+										pronounciation = pronounciation,
+										definitions = definitionDictionary,
+										quotes = quoteList,
+										origin = origin)
+
+if __name__ == "__main__":
+	app.run()
