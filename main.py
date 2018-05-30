@@ -5,24 +5,35 @@ import datetime
 from flask import Flask
 from flask import render_template
 from flask import jsonify
+from flask import Markup
 
-wordHtml = html.fromstring(requests.get('http://dictionary.reference.com/wordoftheday').text)
-word = (wordHtml.xpath('(//*[@class="wotd-wrapper wotd-requested wotd-today"]//@data-word)'))[0]
-definitions = (wordHtml.xpath('(//*[@class="definition-box"]/ol)[1]/li'))
-usages = wordHtml.xpath('//*[@data-word="' + word + '"]/div[2]/div[2]/div/blockquote/span')
-origin = wordHtml.cssselect('div.origin-content')[0].text_content()
+word_html = html.fromstring(requests.get('http://dictionary.reference.com/wordoftheday').text)
+word = (word_html.xpath('(//*[@class="wotd-wrapper wotd-requested wotd-today"]//@data-word)'))[0]
+definition_list_items = (word_html.xpath('(//*[@class="definition-box"]/ol)[1]/li'))
+usages = word_html.xpath('//*[@data-word="' + word + '"]/div[2]/div[2]/div/blockquote/span')
 
-wordDetailHtml = html.fromstring(requests.get('http://dictionary.reference.com/browse/' + word).text)
-pronounciation = wordDetailHtml.cssselect('span.pron.spellpron')[0].text_content()
-wordType = wordDetailHtml.cssselect('div.def-list > section > header')[0].text_content()
+# get as html to preserve em tags
+origin = (html.tostring(word_html.cssselect('div.origin-content')[0])).decode('utf-8')
+
+# remove multiple spaces
+origin = ' '.join(origin.split())
+
+word_detail_html = html.fromstring(requests.get('http://dictionary.reference.com/browse/' + word).text)
+word_metadata = word_detail_html.cssselect('header')[1].cssselect('span')
+word_type = word_metadata[1].text_content()
+# may not have a pronunciation
+if len(word_metadata) > 2:
+    pronounciation = word_metadata[2].text_content()
+else:
+    pronounciation = ''
 
 # populate a dictionary with the word definitions, keyed on word type (noun, verb, etc)
-definitionDictionary = {}
-definitionList = []
-for definition in definitions:
-	definitionList.append(definition.text_content())
+definitions = {}
+definition_list = []
+for definition in definition_list_items:
+	definition_list.append(definition.text_content())
 
-definitionDictionary[wordType] = definitionList
+definitions[word_type] = definition_list
 
 # populate a dictionary of quotes
 quotes = []
@@ -33,17 +44,17 @@ for usage in usages:
 	elif usage.attrib.get("class") == "author":
 		sources.append(usage.text_content())
 
-quoteList = []
+quote_list = []
 i = 0
 for quote in quotes:
 	q = {
 		'quote': quote,
 		'source': sources[i]
 			}
-	quoteList.append(q)
+	quote_list.append(q)
 	i = i + 1
 
-wordDate = datetime.date.today().isoformat()
+word_date = datetime.date.today().isoformat()
 
 app = Flask(__name__)
 
@@ -51,17 +62,17 @@ app = Flask(__name__)
 def main():
     return render_template("index.html", word = word,
 										pronounciation = pronounciation,
-										definitions = definitionDictionary,
-										quotes = quoteList,
+										definitions = definitions,
+										quotes = quote_list,
 										origin = origin)
 
 @app.route("/data")
 def data():
 		return jsonify(	word = word,
-										wordDate = wordDate,
+										word_date = word_date,
 										pronounciation = pronounciation,
-										definitions = definitionDictionary,
-										quotes = quoteList,
+										definitions = definitions,
+										quotes = quote_list,
 										origin = origin)
 
 if __name__ == "__main__":

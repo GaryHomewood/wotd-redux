@@ -12,7 +12,8 @@
     <div class="container">
         <h1>{{ word }}</h1>
         <p class="pronounciation">{{ pronounciation }}</p>
-        {% for key, value in definitions.iteritems() %}
+        
+        {% for key, value in definitions.items() %}
         <p class="wordtype">{{ key }}</p>
         <ol>
             {% for v in value %}
@@ -21,6 +22,7 @@
         </ol>
         {% endfor %}
         <hr/>
+        
         <h2>Quotes</h2>
         {% for quote in quotes %}
         <blockquote>
@@ -28,8 +30,9 @@
             <small>&mdash;{{ quote.source }}</small>
         </blockquote>
         {% endfor %}
+        
         <h2>Origin</h2>
-        <p>{{ origin }}</p>
+        <p>{{ origin|safe }}</p>
         <p>source: <a href="http://dictionary.reference.com/wordoftheday">Dictionary.com word of the day</a></p>
     </div>
 </body>
