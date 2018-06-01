@@ -11,7 +11,7 @@
 <body>
     <div class="container">
         <h1>{{ word }}</h1>
-        <p class="pronounciation">{{ pronounciation }}</p>
+        <p class="pronounciation">{{ pronounciation|safe }}</p>
         
         {% for key, value in definitions.items() %}
         <p class="wordtype">{{ key }}</p>

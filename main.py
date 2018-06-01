@@ -14,18 +14,14 @@ usages = word_html.xpath('//*[@data-word="' + word + '"]/div[2]/div[2]/div/block
 
 # get as html to preserve em tags
 origin = (html.tostring(word_html.cssselect('div.origin-content')[0])).decode('utf-8')
-
 # remove multiple spaces
 origin = ' '.join(origin.split())
 
+# get pronounciation and word type from the detail page
 word_detail_html = html.fromstring(requests.get('http://dictionary.reference.com/browse/' + word).text)
+pronounciation = html.tostring((word_detail_html.cssselect('h1 + span + div')[0])[1]).decode('utf-8')
 word_metadata = word_detail_html.cssselect('header')[1].cssselect('span')
 word_type = word_metadata[1].text_content()
-# may not have a pronunciation
-if len(word_metadata) > 2:
-    pronounciation = word_metadata[2].text_content()
-else:
-    pronounciation = ''
 
 # populate a dictionary with the word definitions, keyed on word type (noun, verb, etc)
 definitions = {}
