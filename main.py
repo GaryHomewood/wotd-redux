@@ -6,6 +6,7 @@ from flask import Flask
 from flask import render_template
 from flask import jsonify
 from flask import Markup
+from flask_scss import Scss
 
 word_html = html.fromstring(requests.get('http://dictionary.reference.com/wordoftheday').text)
 word = (word_html.xpath('(//*[@class="wotd-wrapper wotd-requested wotd-today"]//@data-word)'))[0]
@@ -53,6 +54,7 @@ for quote in quotes:
 word_date = datetime.date.today().isoformat()
 
 app = Flask(__name__)
+Scss(app, static_dir='static/stylesheets', asset_dir='assets/scss')
 
 @app.route("/")
 def main():
@@ -64,8 +66,7 @@ def main():
 
 @app.route("/data")
 def data():
-		return jsonify(	word = word,
-										word_date = word_date,
+		return jsonify(	word = word,    word_date = word_date,
 										pronounciation = pronounciation,
 										definitions = definitions,
 										quotes = quote_list,
