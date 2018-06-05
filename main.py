@@ -1,76 +1,111 @@
-from lxml import html
-from lxml.cssselect import CSSSelector
-import requests
+""" Flask app to extract word of the day
+"""
 import datetime
+import requests
+
+from lxml import html
 from flask import Flask
 from flask import render_template
 from flask import jsonify
-from flask import Markup
 from flask_scss import Scss
 
-word_html = html.fromstring(requests.get('http://dictionary.reference.com/wordoftheday').text)
-word = (word_html.xpath('(//*[@class="wotd-wrapper wotd-requested wotd-today"]//@data-word)'))[0]
-definition_list_items = (word_html.xpath('(//*[@class="definition-box"]/ol)[1]/li'))
-usages = word_html.xpath('//*[@data-word="' + word + '"]/div[2]/div[2]/div/blockquote/span')
+class Parser():
+    """ Parser to extract word of the day and associated metadata
+    """
+    word_html = ''
+    word = ''
+    pronunciation = ''
+    word_type = ''
 
-# get as html to preserve em tags
-origin = (html.tostring(word_html.cssselect('div.origin-content')[0])).decode('utf-8')
-# remove multiple spaces
-origin = ' '.join(origin.split())
+    def __init__(self):
+        word_url = 'http://dictionary.reference.com/wordoftheday'
+        self.word_html = html.fromstring(requests.get(word_url).text)
 
-# get pronounciation and word type from the detail page
-word_detail_html = html.fromstring(requests.get('http://dictionary.reference.com/browse/' + word).text)
-pronounciation = html.tostring((word_detail_html.cssselect('h1 + span + div')[0])[1]).decode('utf-8')
-word_metadata = word_detail_html.cssselect('header')[1].cssselect('span')
-word_type = word_metadata[1].text_content()
+        word_xpath = '(//*[@class="wotd-wrapper wotd-requested wotd-today"]//@data-word)'
+        self.word = (self.word_html.xpath(word_xpath))[0]
 
-# populate a dictionary with the word definitions, keyed on word type (noun, verb, etc)
-definitions = {}
-definition_list = []
-for definition in definition_list_items:
-	definition_list.append(definition.text_content())
+        # get pronounciation and word type from the detail page
+        word_detail_url = 'http://dictionary.reference.com/browse/' + self.word
+        word_detail_html = html.fromstring(requests.get(word_detail_url).text)
 
-definitions[word_type] = definition_list
+        pronunciation_container = word_detail_html.cssselect('h3 + div')
+        if not pronunciation_container:
+            # no alternative spelling
+            pronunciation_container = word_detail_html.cssselect('h1 + span + div')
 
-# populate a dictionary of quotes
-quotes = []
-sources = []
-for usage in usages:
-	if usage.attrib.get("class") == None:
-		quotes.append(usage.text_content())
-	elif usage.attrib.get("class") == "author":
-		sources.append(usage.text_content())
+        self.pronounciation = html.tostring((pronunciation_container[0])[1]).decode('utf-8')
 
-quote_list = []
-i = 0
-for quote in quotes:
-	q = {
-		'quote': quote,
-		'source': sources[i]
-			}
-	quote_list.append(q)
-	i = i + 1
+        word_metadata = word_detail_html.cssselect('header')[1].cssselect('span')
+        self.word_type = word_metadata[1].text_content()
 
-word_date = datetime.date.today().isoformat()
+    def get_definitions(self):
+        """ populate a dictionary with the word definitions, keyed on word type (noun, verb, etc)
+        """
+        definition_list_items = (self.word_html.xpath('(//*[@class="definition-box"]/ol)[1]/li'))
+        definitions = {}
+        definition_list = []
+        for definition in definition_list_items:
+            definition_list.append(definition.text_content())
 
-app = Flask(__name__)
-Scss(app, static_dir='static/stylesheets', asset_dir='assets/scss')
+        definitions[self.word_type] = definition_list
+        return definitions
 
-@app.route("/")
+    def get_quotes(self):
+        """ populate a dictionary of quotes
+        """
+        quote_list = []
+        quotes = []
+        sources = []
+        usages_xpath = '//*[@data-word="' + self.word + '"]/div[2]/div[2]/div/blockquote/span'
+        usages = self.word_html.xpath(usages_xpath)
+
+        for usage in usages:
+            if usage.attrib.get("class") is None:
+                quotes.append(usage.text_content())
+            elif usage.attrib.get("class") == "author":
+                sources.append(usage.text_content())
+                i = 0
+
+        for quote in quotes:
+            blockquote = {
+                'quote': quote,
+                'source': sources[i]
+                }
+            quote_list.append(blockquote)
+            i = i + 1
+
+        return quote_list
+
+    def get_origin(self):
+        """ get as html to preserve em tags, and remove multiple spaces
+        """
+        origin = (html.tostring(self.word_html.cssselect('div.origin-content')[0])).decode('utf-8')
+        return ' '.join(origin.split())
+
+PARSER = Parser()
+APP = Flask(__name__)
+Scss(APP, static_dir='static/stylesheets', asset_dir='assets/scss')
+
+@APP.route("/")
 def main():
-    return render_template("index.html", word = word,
-										pronounciation = pronounciation,
-										definitions = definitions,
-										quotes = quote_list,
-										origin = origin)
+    """ word of the day page
+    """
+    return render_template("index.html", word=PARSER.word,
+                           pronounciation=PARSER.pronounciation,
+                           definitions=PARSER.get_definitions(),
+                           quotes=PARSER.get_quotes(),
+                           origin=PARSER.get_origin())
 
-@app.route("/data")
+@APP.route("/data")
 def data():
-		return jsonify(	word = word,    word_date = word_date,
-										pronounciation = pronounciation,
-										definitions = definitions,
-										quotes = quote_list,
-										origin = origin)
+    """ word of the day as json
+    """
+    return jsonify(word=PARSER.word,
+                   word_date=datetime.date.today().isoformat(),
+                   pronounciation=PARSER.pronounciation,
+                   definitions=PARSER.get_definitions(),
+                   quotes=PARSER.get_quotes(),
+                   origin=PARSER.get_origin())
 
 if __name__ == "__main__":
-	app.run()
+    APP.run()
