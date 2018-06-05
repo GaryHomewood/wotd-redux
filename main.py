@@ -83,10 +83,10 @@ class Parser():
         return ' '.join(origin.split())
 
 PARSER = Parser()
-APP = Flask(__name__)
-Scss(APP, static_dir='static/stylesheets', asset_dir='assets/scss')
+app = Flask(__name__)
+Scss(app, static_dir='static/stylesheets', asset_dir='assets/scss')
 
-@APP.route("/")
+@app.route("/")
 def main():
     """ word of the day page
     """
@@ -96,7 +96,7 @@ def main():
                            quotes=PARSER.get_quotes(),
                            origin=PARSER.get_origin())
 
-@APP.route("/data")
+@app.route("/data")
 def data():
     """ word of the day as json
     """
@@ -108,4 +108,4 @@ def data():
                    origin=PARSER.get_origin())
 
 if __name__ == "__main__":
-    APP.run()
+    app.run()
