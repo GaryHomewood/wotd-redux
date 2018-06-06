@@ -26,11 +26,11 @@ html, body {
         line-height: 40px;
         margin: 40px 0 10px; }
 
-        .pronounciation {
+        .pronunciation {
           color: #AAA; }
-          .pronounciation .bold {
+          .pronunciation .bold {
             font-weight: bold; }
-            .pronounciation .italic {
+            .pronunciation .italic {
               font-style: italic; }
 
 li {

@@ -33,7 +33,7 @@ class Parser():
             # no alternative spelling
             pronunciation_container = word_detail_html.cssselect('h1 + span + div')
 
-        self.pronounciation = html.tostring((pronunciation_container[0])[1]).decode('utf-8')
+        self.pronunciation = html.tostring((pronunciation_container[0])[1]).decode('utf-8')
 
         word_metadata = word_detail_html.cssselect('header')[1].cssselect('span')
         self.word_type = word_metadata[1].text_content()
@@ -83,29 +83,29 @@ class Parser():
         return ' '.join(origin.split())
 
 PARSER = Parser()
-app = Flask(__name__)
-Scss(app, static_dir='static/stylesheets', asset_dir='assets/scss')
+APP = Flask(__name__)
+Scss(APP, static_dir='static/stylesheets', asset_dir='assets/scss')
 
-@app.route("/")
+@APP.route("/")
 def main():
     """ word of the day page
     """
     return render_template("index.html", word=PARSER.word,
-                           pronounciation=PARSER.pronounciation,
+                           pronunciation=PARSER.pronunciation,
                            definitions=PARSER.get_definitions(),
                            quotes=PARSER.get_quotes(),
                            origin=PARSER.get_origin())
 
-@app.route("/data")
+@APP.route("/data")
 def data():
     """ word of the day as json
     """
     return jsonify(word=PARSER.word,
                    word_date=datetime.date.today().isoformat(),
-                   pronounciation=PARSER.pronounciation,
+                   pronunciation=PARSER.pronunciation,
                    definitions=PARSER.get_definitions(),
                    quotes=PARSER.get_quotes(),
                    origin=PARSER.get_origin())
 
 if __name__ == "__main__":
-    app.run()
+    APP.run()
