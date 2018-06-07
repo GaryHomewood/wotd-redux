@@ -28,12 +28,14 @@ class Parser():
         word_detail_url = 'http://dictionary.reference.com/browse/' + self.word
         word_detail_html = html.fromstring(requests.get(word_detail_url).text)
 
-        pronunciation_container = word_detail_html.cssselect('h3 + div')
+        # try different selectors for pronounciation, to cater for alternate spelling
+        pronunciation_container = word_detail_html.cssselect('h1 + div')
         if not pronunciation_container:
-            # no alternative spelling
             pronunciation_container = word_detail_html.cssselect('h1 + span + div')
-
-        self.pronunciation = html.tostring((pronunciation_container[0])[1]).decode('utf-8')
+        if not pronunciation_container:
+            pronunciation_container = word_detail_html.cssselect('h3 + div')
+        if pronunciation_container:
+            self.pronunciation = html.tostring((pronunciation_container[0])[1]).decode('utf-8')
 
         word_metadata = word_detail_html.cssselect('header')[1].cssselect('span')
         self.word_type = word_metadata[1].text_content()
