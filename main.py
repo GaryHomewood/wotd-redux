@@ -29,12 +29,12 @@ class Parser():
         word_detail_html = html.fromstring(requests.get(word_detail_url).text)
 
         # try different selectors for pronounciation, to cater for alternate spelling
-        pronunciation_container = word_detail_html.cssselect('h1 + div')
+        pronunciation_container = word_detail_html.cssselect('h1 + span + div')
         if not pronunciation_container:
-            pronunciation_container = word_detail_html.cssselect('h1 + span + div')
+            pronunciation_container = word_detail_html.cssselect('h1 + div')
         if not pronunciation_container:
             pronunciation_container = word_detail_html.cssselect('h3 + div')
-        if pronunciation_container:
+        if pronunciation_container and pronunciation_container[0].text_content() != "":
             self.pronunciation = html.tostring((pronunciation_container[0])[1]).decode('utf-8')
 
         word_metadata = word_detail_html.cssselect('header')[1].cssselect('span')
